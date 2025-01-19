@@ -2,6 +2,8 @@ import yaml, sys
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from moveit_configs_utils import MoveItConfigsBuilder
 
@@ -9,11 +11,22 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-
+    ros2_control_hardware_type = DeclareLaunchArgument(
+        "ros2_control_hardware_type",
+        default_value="main",
+        description="Ros2 Control Hardware Interface Type [main, sim]",
+    )
 
     moveit_config = (
         MoveItConfigsBuilder("rover_arm", package_name="rover_arm")
-        .robot_description(file_path="config/rover_arm.urdf.xacro")
+        .robot_description(
+            file_path="config/rover_arm.urdf.xacro",
+            mappings={
+                "ros2_control_hardware_type": LaunchConfiguration(
+                    "ros2_control_hardware_type"
+                )
+            },
+        )
         .to_moveit_configs()
     )
 
@@ -114,6 +127,7 @@ def generate_launch_description():
         joy_node,
         servo_node,
         joy_to_servo_node,
+        ros2_control_hardware_type,
     ]
     if use_rviz == 'true':
         nodes.append(rviz_node)
