@@ -69,6 +69,8 @@ function driveOutput(e,props,updateChassisState){
     
 }
 
+
+
 function sendDriveMessage(topic,throttle){
     var adjustedYLeft = -1*throttle*leftYAxis
     var adjustedYRight = -1*throttle*rightYAxis
@@ -138,6 +140,7 @@ function ChassisControl(props){
         name: "/tower/light/control",
         messageType: "rover2_control_interface/msg/LightControlMessage"
     })
+    
 
     const chassisControls = window.joypad.on('axis_move', function(e){driveOutput(e,props,updateChassisState);});
     const lightToggle = window.joypad.on('button_press', function(e){
@@ -164,12 +167,25 @@ function ChassisControl(props){
         sendDriveMessage(controlTopic,props.throttle)
         
     },[chassisState])
-    
+    const changeLEDBlue = () => {
+       
+        const data = new ROSLIB.Message({
+            red: 0,
+            green: 0,
+            blue: 255
+        })
+        console.log(data)
+        lightTopic.publish(data)
+        
+    }
     
    
     
     return(
         <div>
+            <button onClick={changeLEDBlue}>
+                Change LED Color
+            </button>
             <article className="driveOutput" id = {props.id[0]} style={{backgroundColor: chassisState.leftColor, width: chassisState.leftWidth}}>{chassisState.leftOutput}</article>
             <article className="driveOutput" id = {props.id[1]} style={{backgroundColor: chassisState.rightColor, width: chassisState.rightWidth}}>{chassisState.rightOutput}</article>
         </div>
